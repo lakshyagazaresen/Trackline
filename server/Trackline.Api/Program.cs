@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 using Trackline.Api.Data;
 using Trackline.Api.Services;
 
@@ -19,20 +21,30 @@ builder.Services.AddCors(options =>
 });
 
 var connectionString =
-    builder.Configuration.GetConnectionString(
-        "TracklineDatabase"
-    )
+    builder.Configuration.GetConnectionString("TracklineDatabase")
     ?? throw new InvalidOperationException(
         "Connection string 'TracklineDatabase' not found."
     );
 
 builder.Services.AddDbContext<TracklineDbContext>(
-    options =>
-        options.UseNpgsql(connectionString)
+    options => options.UseNpgsql(connectionString)
 );
 
 builder.Services.AddScoped<ITaskService, TaskService>();
 
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(
+        builder.Configuration.GetSection("AzureAd")
+    );
+
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<
+    ICurrentUserService,
+    CurrentUserService
+>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -42,6 +54,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("TracklineFrontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

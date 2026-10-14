@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
+
 import AddTaskForm from "./AddTaskForm";
 import TaskItem from "./TaskItem";
 
-import {
-  createTask,
-  deleteTask,
-  getTasks,
-  updateTask,
-  type Task,
-} from "./tasksApi";
-
+import type { Task } from "./tasksApi";
+import { useTasksApi } from "./useTasksApi";
 function TaskList() {
+  const { getTasks, createTask, updateTask, deleteTask } = useTasksApi();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,54 +23,36 @@ function TaskList() {
       } catch (error) {
         console.error(error);
 
-        setError("Could not load your tasks. Please try again.");
+        setError("Unable to load tasks.");
       } finally {
         setIsLoading(false);
       }
     }
 
     loadTasks();
-  }, []);
+  }, [getTasks]);
 
   const completedCount = tasks.filter((task) => task.completed).length;
 
   async function handleAddTask(title: string) {
-    try {
-      setError(null);
+    const newTask = await createTask(title);
 
-      const newTask = await createTask(title);
-
-      setTasks((currentTasks) => [...currentTasks, newTask]);
-    } catch (error) {
-      console.error(error);
-
-      setError("Could not create the task. Please try again.");
-
-      throw error;
-    }
+    setTasks((currentTasks) => [...currentTasks, newTask]);
   }
 
-  async function handleToggleTask(taskId: number) {
-    const task = tasks.find((task) => task.id === taskId);
-
-    if (!task) {
-      return;
-    }
-
+  async function handleToggleTask(id: number, completed: boolean) {
     try {
       setError(null);
 
-      const updatedTask = await updateTask(taskId, !task.completed);
+      const updatedTask = await updateTask(id, completed);
 
       setTasks((currentTasks) =>
-        currentTasks.map((task) =>
-          task.id === updatedTask.id ? updatedTask : task,
-        ),
+        currentTasks.map((task) => (task.id === id ? updatedTask : task)),
       );
     } catch (error) {
       console.error(error);
 
-      setError("Could not update the task. Please try again.");
+      setError("Unable to update task.");
     }
   }
 
@@ -120,9 +98,7 @@ function TaskList() {
         {tasks.map((task) => (
           <TaskItem
             key={task.id}
-            id={task.id}
-            title={task.title}
-            completed={task.completed}
+            task={task}
             onToggle={handleToggleTask}
             onDelete={handleDeleteTask}
           />

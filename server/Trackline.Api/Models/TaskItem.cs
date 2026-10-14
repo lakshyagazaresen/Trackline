@@ -10,4 +10,7 @@ public class TaskItem
     public string Title { get; set; } = string.Empty;
 
     public bool Completed { get; set; }
+
+    [MaxLength(100)]
+    public string UserId { get; set; } = string.Empty;
 }

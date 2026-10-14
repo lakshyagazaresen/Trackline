@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trackline.Api.Models;
 using Trackline.Api.Services;
 
+
 namespace Trackline.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
@@ -43,12 +46,7 @@ public class TasksController : ControllerBase
     public async Task<ActionResult<TaskItem>> CreateTask(
         CreateTaskRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Title))
-        {
-            return BadRequest(
-                "Task title is required."
-            );
-        }
+        
 
         var task =
             await _taskService.CreateTaskAsync(
@@ -94,4 +92,5 @@ public class TasksController : ControllerBase
 
         return NoContent();
     }
+
 }

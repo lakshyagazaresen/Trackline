@@ -11,5 +11,15 @@ public class TracklineDbContext : DbContext
     {
     }
 
-    public DbSet<TaskItem> Tasks => Set<TaskItem>();
+    public DbSet<TaskItem> Tasks =>
+        Set<TaskItem>();
+
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<TaskItem>()
+            .HasIndex(task => task.UserId);
+    }
 }

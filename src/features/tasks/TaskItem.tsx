@@ -1,40 +1,48 @@
+import type { Task } from './tasksApi'
+
 type TaskItemProps = {
-  id: number
-  title: string
-  completed: boolean
-  onToggle: (id: number) => void
+  task: Task
+  onToggle: (
+    id: number,
+    completed: boolean,
+  ) => void
   onDelete: (id: number) => void
 }
 
 function TaskItem({
-  id,
-  title,
-  completed,
+  task,
   onToggle,
   onDelete,
 }: TaskItemProps) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-slate-800 p-3">
-      <input
-        type="checkbox"
-        checked={completed}
-        onChange={() => onToggle(id)}
-      />
+    <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={(event) =>
+            onToggle(
+              task.id,
+              event.currentTarget.checked,
+            )
+          }
+        />
 
-      <span
-        className={
-          completed
-            ? 'flex-1 text-slate-500 line-through'
-            : 'flex-1 text-slate-200'
-        }
-      >
-        {title}
-      </span>
+        <span
+          className={
+            task.completed
+              ? 'text-slate-500 line-through'
+              : 'text-slate-200'
+          }
+        >
+          {task.title}
+        </span>
+      </div>
 
       <button
         type="button"
-        onClick={() => onDelete(id)}
-        className="rounded-md px-2 py-1 text-sm text-slate-500 hover:bg-slate-800 hover:text-red-400"
+        onClick={() => onDelete(task.id)}
+        className="text-sm text-slate-500 hover:text-red-400"
       >
         Delete
       </button>
