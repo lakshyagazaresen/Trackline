@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/main_trackline-dev-api.yml'
   workflow_dispatch:
 
 jobs:
