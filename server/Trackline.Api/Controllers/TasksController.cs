@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Trackline.Api.Models;
 using Trackline.Api.Services;
 
-
 namespace Trackline.Api.Controllers;
 
 [Authorize]
@@ -21,18 +20,15 @@ public class TasksController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
     {
-        var tasks =
-            await _taskService.GetTasksAsync();
+        var tasks = await _taskService.GetTasksAsync();
 
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TaskItem>> GetTask(
-        int id)
+    public async Task<ActionResult<TaskItem>> GetTask(int id)
     {
-        var task =
-            await _taskService.GetTaskAsync(id);
+        var task = await _taskService.GetTaskAsync(id);
 
         if (task is null)
         {
@@ -43,40 +39,66 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TaskItem>> CreateTask(
-        CreateTaskRequest request)
+    public async Task<ActionResult<TaskItem>>
+        CreateTask(
+            CreateTaskRequest request
+        )
     {
-        
+        try
+        {
+            var task =
+                await _taskService
+                    .CreateTaskAsync(request);
 
-        var task =
-            await _taskService.CreateTaskAsync(
-                request.Title
+            return CreatedAtAction(
+                nameof(GetTask),
+                new { id = task.Id },
+                task
             );
-
-        return CreatedAtAction(
-            nameof(GetTask),
-            new { id = task.Id },
-            task
-        );
+        }
+        catch (
+            InvalidOperationException exception
+        )
+        {
+            return BadRequest(new
+            {
+                message = exception.Message
+            });
+        }
     }
 
-    [HttpPatch("{id}")]
-    public async Task<ActionResult<TaskItem>> UpdateTask(
-        int id,
-        UpdateTaskRequest request)
+    [HttpPut("{id}")]
+    public async Task<ActionResult<TaskItem>>
+        UpdateTask(
+            int id,
+            UpdateTaskRequest request
+        )
     {
-        var task =
-            await _taskService.UpdateTaskAsync(
-                id,
-                request.Completed
-            );
-
-        if (task is null)
+        try
         {
-            return NotFound();
-        }
+            var task =
+                await _taskService
+                    .UpdateTaskAsync(
+                        id,
+                        request
+                    );
 
-        return Ok(task);
+            if (task is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(task);
+        }
+        catch (
+            InvalidOperationException exception
+        )
+        {
+            return BadRequest(new
+            {
+                message = exception.Message
+            });
+        }
     }
 
     [HttpDelete("{id}")]
@@ -92,5 +114,4 @@ public class TasksController : ControllerBase
 
         return NoContent();
     }
-
 }

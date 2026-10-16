@@ -8,11 +8,13 @@ public interface ITaskService
 
     Task<TaskItem?> GetTaskAsync(int id);
 
-    Task<TaskItem> CreateTaskAsync(string title);
+    Task<TaskItem> CreateTaskAsync(
+        CreateTaskRequest request
+    );
 
     Task<TaskItem?> UpdateTaskAsync(
         int id,
-        bool completed
+        UpdateTaskRequest request
     );
 
     Task<bool> DeleteTaskAsync(int id);

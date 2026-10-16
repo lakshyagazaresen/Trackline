@@ -2,11 +2,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Trackline.Api.Data;
+using System.Text.Json.Serialization;
 using Trackline.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions
+            .Converters
+            .Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -31,6 +39,13 @@ builder.Services.AddDbContext<TracklineDbContext>(
 );
 
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<
+    ITaskCategoryService,
+    TaskCategoryService
+>();
+builder.Services.AddScoped<
+    INutritionService,
+    NutritionService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

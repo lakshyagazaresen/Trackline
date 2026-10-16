@@ -1,48 +1,61 @@
 import { Route, Routes } from 'react-router'
+
+import ProtectedRoute from './auth/ProtectedRoute'
 import AppShell from './components/layout/AppShell'
 import Dashboard from './features/dashboard/Dashboard'
-import TasksPage from './features/tasks/TasksPage'
-import GoalsPage from './features/goals/GoalsPage'
-import FitnessPage from './features/fitness/FitnessPage'
-import NutritionPage from './features/nutrition/NutritionPage'
 import FinancePage from './features/finance/FinancePage'
+import FitnessPage from './features/fitness/FitnessPage'
+import GoalsPage from './features/goals/GoalsPage'
+import LoginPage from './features/auth/LoginPage'
+import NutritionPage from './features/nutrition/NutritionPage'
+import TasksPage from './features/tasks/TasksPage'
 import VaultPage from './features/vault/VaultPage'
 
 function App() {
   return (
     <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<Dashboard />} />
+      <Route
+        path="/login"
+        element={<LoginPage />}
+      />
 
-        <Route
-          path="tasks"
-          element={<TasksPage />}
-        />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route
+            index
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="goals"
-          element={<GoalsPage />}
-        />
+          <Route
+            path="tasks"
+            element={<TasksPage />}
+          />
 
-        <Route
-          path="fitness"
-          element={<FitnessPage />}
-        />
+          <Route
+            path="goals"
+            element={<GoalsPage />}
+          />
 
-        <Route
-          path="nutrition"
-          element={<NutritionPage />}
-        />
+          <Route
+            path="fitness"
+            element={<FitnessPage />}
+          />
 
-        <Route
-          path="finance"
-          element={<FinancePage />}
-        />
+          <Route
+            path="nutrition"
+            element={<NutritionPage />}
+          />
 
-        <Route
-          path="vault"
-          element={<VaultPage />}
-        />
+          <Route
+            path="finance"
+            element={<FinancePage />}
+          />
+
+          <Route
+            path="vault"
+            element={<VaultPage />}
+          />
+        </Route>
       </Route>
     </Routes>
   )

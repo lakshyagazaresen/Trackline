@@ -34,23 +34,45 @@ public class TaskService : ITaskService
 
         return await _context.Tasks
             .AsNoTracking()
-            .FirstOrDefaultAsync(
-                task =>
-                    task.Id == id &&
-                    task.UserId == userId
+            .FirstOrDefaultAsync(task =>
+                task.Id == id &&
+                task.UserId == userId
             );
     }
 
     public async Task<TaskItem> CreateTaskAsync(
-        string title)
+        CreateTaskRequest request)
     {
         var userId = _currentUserService.UserId;
+        await ValidateCategoryAsync(
+            request.CategoryId,
+            userId
+            );
+        var now = DateTimeOffset.UtcNow;
 
         var task = new TaskItem
         {
-            Title = title,
-            Completed = false,
-            UserId = userId
+            UserId = userId,
+
+            Title = request.Title.Trim(),
+
+            Description =
+                string.IsNullOrWhiteSpace(request.Description)
+                    ? null
+                    : request.Description.Trim(),
+
+            Status = TaskItemStatus.Todo,
+
+            Priority = request.Priority,
+
+            CategoryId = request.CategoryId,
+
+            DueDate = request.DueDate,
+
+            CreatedAt = now,
+            UpdatedAt = now,
+
+            CompletedAt = null
         };
 
         _context.Tasks.Add(task);
@@ -62,15 +84,14 @@ public class TaskService : ITaskService
 
     public async Task<TaskItem?> UpdateTaskAsync(
         int id,
-        bool completed)
+        UpdateTaskRequest request)
     {
         var userId = _currentUserService.UserId;
 
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(
-                task =>
-                    task.Id == id &&
-                    task.UserId == userId
+            .FirstOrDefaultAsync(task =>
+                task.Id == id &&
+                task.UserId == userId
             );
 
         if (task is null)
@@ -78,7 +99,41 @@ public class TaskService : ITaskService
             return null;
         }
 
-        task.Completed = completed;
+        await ValidateCategoryAsync(
+            request.CategoryId,
+            userId
+        );
+
+        var now = DateTimeOffset.UtcNow;
+        var previousStatus = task.Status;
+
+        task.Title = request.Title.Trim();
+
+        task.Description =
+            string.IsNullOrWhiteSpace(request.Description)
+                ? null
+                : request.Description.Trim();
+
+        task.Status = request.Status;
+        task.Priority = request.Priority;
+        task.CategoryId =
+            request.CategoryId;
+        task.DueDate = request.DueDate;
+        task.UpdatedAt = now;
+
+        if (
+            request.Status == TaskItemStatus.Completed &&
+            previousStatus != TaskItemStatus.Completed
+        )
+        {
+            task.CompletedAt = now;
+        }
+        else if (
+            request.Status != TaskItemStatus.Completed
+        )
+        {
+            task.CompletedAt = null;
+        }
 
         await _context.SaveChangesAsync();
 
@@ -90,10 +145,9 @@ public class TaskService : ITaskService
         var userId = _currentUserService.UserId;
 
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(
-                task =>
-                    task.Id == id &&
-                    task.UserId == userId
+            .FirstOrDefaultAsync(task =>
+                task.Id == id &&
+                task.UserId == userId
             );
 
         if (task is null)
@@ -107,4 +161,29 @@ public class TaskService : ITaskService
 
         return true;
     }
+    private async Task ValidateCategoryAsync(
+    int? categoryId,
+    string userId
+)
+{
+    if (categoryId is null)
+    {
+        return;
+    }
+
+    var categoryExists =
+        await _context
+            .TaskCategories
+            .AnyAsync(category =>
+                category.Id == categoryId &&
+                category.UserId == userId
+            );
+
+    if (!categoryExists)
+    {
+        throw new InvalidOperationException(
+            "The selected category is not available."
+        );
+    }
+}
 }
