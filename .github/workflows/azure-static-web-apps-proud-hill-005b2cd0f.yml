@@ -4,57 +4,83 @@ on:
   push:
     branches:
       - main
+
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
     branches:
       - main
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: >
+      github.event_name == 'push' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.event.action != 'closed'
+      )
+
     runs-on: ubuntu-latest
     name: Build and Deploy Job
+
     permissions:
-       id-token: write
-       contents: read
+      id-token: write
+      contents: read
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
-      - name: Install OIDC Client from Core Package
+
+      - name: Install OIDC client
         run: npm install @actions/core@1.6.0 @actions/http-client
-      - name: Get Id Token
-        uses: actions/github-script@v6
+
+      - name: Get GitHub ID token
+        uses: actions/github-script@v7
         id: idtoken
         with:
-           script: |
-               const coredemo = require('@actions/core')
-               return await coredemo.getIDToken()
-           result-encoding: string
-      - - name: Build And Deploy
-  id: builddeploy
-  uses: Azure/static-web-apps-deploy@v1
-  env:
-    VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-  with:
-    azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_HILL_005B2CD0F }}
-    action: "upload"
+          script: |
+            const core = require('@actions/core')
+            return await core.getIDToken()
+          result-encoding: string
 
-    app_location: "/"
-    api_location: ""
-    output_location: "dist"
+      - name: Build and deploy Trackline
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
 
-    github_id_token: ${{ steps.idtoken.outputs.result }}
-          ###### End of Repository/Build Configurations ######
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_ENTRA_TENANT_SUBDOMAIN: ${{ vars.VITE_ENTRA_TENANT_SUBDOMAIN }}
+          VITE_ENTRA_SPA_CLIENT_ID: ${{ vars.VITE_ENTRA_SPA_CLIENT_ID }}
+          VITE_ENTRA_API_SCOPE: ${{ vars.VITE_ENTRA_API_SCOPE }}
+
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_HILL_005B2CD0F }}
+          action: "upload"
+
+          app_location: "/"
+          api_location: ""
+          output_location: "dist"
+
+          github_id_token: ${{ steps.idtoken.outputs.result }}
 
   close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed'
+
     runs-on: ubuntu-latest
     name: Close Pull Request Job
+
     steps:
       - name: Close Pull Request
         id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_HILL_005B2CD0F }}
