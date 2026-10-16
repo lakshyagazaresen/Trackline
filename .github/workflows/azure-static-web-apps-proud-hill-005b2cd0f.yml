@@ -57,10 +57,10 @@ jobs:
 
       - name: Build Trackline
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-          VITE_ENTRA_TENANT_SUBDOMAIN: ${{ vars.VITE_ENTRA_TENANT_SUBDOMAIN }}
-          VITE_ENTRA_SPA_CLIENT_ID: ${{ vars.VITE_ENTRA_SPA_CLIENT_ID }}
-          VITE_ENTRA_API_SCOPE: ${{ vars.VITE_ENTRA_API_SCOPE }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_ENTRA_TENANT_SUBDOMAIN: ${{ secrets.VITE_ENTRA_TENANT_SUBDOMAIN }}
+          VITE_ENTRA_SPA_CLIENT_ID: ${{ secrets.VITE_ENTRA_SPA_CLIENT_ID }}
+          VITE_ENTRA_API_SCOPE: ${{ secrets.VITE_ENTRA_API_SCOPE }}
         run: npm run build
 
       - name: Get GitHub ID token
