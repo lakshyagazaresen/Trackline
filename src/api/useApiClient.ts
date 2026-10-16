@@ -39,7 +39,8 @@ export function useApiClient() {
 
             // Interactive redirect returns through
             // the normal React application.
-            redirectUri: '/',
+            redirectUri:
+              window.location.origin,
 
             // Return to the page the user was on.
             redirectStartPage:

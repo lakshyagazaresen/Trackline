@@ -36,8 +36,8 @@ export const msalConfig: Configuration = {
       `${tenantId}.ciamlogin.com`,
     ],
 
-    redirectUri: '/',
-    postLogoutRedirectUri: '/',
+    redirectUri: window.location.origin,
+    postLogoutRedirectUri: window.location.origin,
   },
 
   cache: {
