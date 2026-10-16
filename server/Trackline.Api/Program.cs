@@ -22,7 +22,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("TracklineFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://proud-hill-005b2cd0f.1.azurestaticapps.net"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
