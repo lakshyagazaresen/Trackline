@@ -4,6 +4,7 @@ using Microsoft.Identity.Web;
 using Trackline.Api.Data;
 using System.Text.Json.Serialization;
 using Trackline.Api.Services;
+using Trackline.Api.Services.Workout;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,15 +41,39 @@ var connectionString =
 builder.Services.AddDbContext<TracklineDbContext>(
     options => options.UseNpgsql(connectionString)
 );
-
+// TASK SERVICES
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<
     ITaskCategoryService,
     TaskCategoryService
 >();
+// NUTRITION SERVICES
 builder.Services.AddScoped<
     INutritionService,
     NutritionService>();
+// WORKOUT SERVICES
+
+builder.Services.AddScoped<
+    IWorkoutCategoryService,
+    WorkoutCategoryService
+>();
+builder.Services.AddScoped<
+    IWorkoutSessionService,
+    WorkoutSessionService
+>();
+builder.Services.AddScoped<
+    IWorkoutSetService,
+    WorkoutSetService
+>();
+builder.Services.AddScoped<
+    IWorkoutSessionExerciseService,
+    WorkoutSessionExerciseService
+>();
+builder.Services.AddScoped<
+    IWorkoutRepeatService,
+    WorkoutRepeatService
+>();
+
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

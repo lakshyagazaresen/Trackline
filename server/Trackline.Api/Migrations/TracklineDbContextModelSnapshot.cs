@@ -235,6 +235,173 @@ namespace Trackline.Api.Migrations
                     b.ToTable("Tasks");
                 });
 
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique()
+                        .HasFilter("\"IsArchived\" = false");
+
+                    b.ToTable("WorkoutCategories");
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("WorkoutDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "WorkoutDate");
+
+                    b.ToTable("WorkoutSessions", t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkoutSessions_Status", "\"Status\" IN ('Planned', 'InProgress', 'Completed')");
+                        });
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSessionExercise", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorkoutCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkoutSessionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkoutCategoryId");
+
+                    b.HasIndex("WorkoutSessionId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("WorkoutSessionExercises", t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkoutSessionExercises_SortOrder", "\"SortOrder\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Reps")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SetNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SetType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<Guid>("WorkoutSessionExerciseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkoutSessionExerciseId", "SetNumber")
+                        .IsUnique();
+
+                    b.ToTable("WorkoutSets", t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkoutSets_Reps", "\"Reps\" IS NULL OR \"Reps\" >= 0");
+
+                            t.HasCheckConstraint("CK_WorkoutSets_SetNumber", "\"SetNumber\" > 0");
+
+                            t.HasCheckConstraint("CK_WorkoutSets_Weight", "\"WeightKg\" IS NULL OR \"WeightKg\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Trackline.Api.Models.TaskItem", b =>
                 {
                     b.HasOne("Trackline.Api.Models.TaskCategory", "Category")
@@ -245,9 +412,54 @@ namespace Trackline.Api.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSessionExercise", b =>
+                {
+                    b.HasOne("Trackline.Api.Models.Workout.WorkoutCategory", "WorkoutCategory")
+                        .WithMany("SessionExercises")
+                        .HasForeignKey("WorkoutCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Trackline.Api.Models.Workout.WorkoutSession", "WorkoutSession")
+                        .WithMany("Exercises")
+                        .HasForeignKey("WorkoutSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkoutCategory");
+
+                    b.Navigation("WorkoutSession");
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSet", b =>
+                {
+                    b.HasOne("Trackline.Api.Models.Workout.WorkoutSessionExercise", "SessionExercise")
+                        .WithMany("Sets")
+                        .HasForeignKey("WorkoutSessionExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SessionExercise");
+                });
+
             modelBuilder.Entity("Trackline.Api.Models.TaskCategory", b =>
                 {
                     b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutCategory", b =>
+                {
+                    b.Navigation("SessionExercises");
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSession", b =>
+                {
+                    b.Navigation("Exercises");
+                });
+
+            modelBuilder.Entity("Trackline.Api.Models.Workout.WorkoutSessionExercise", b =>
+                {
+                    b.Navigation("Sets");
                 });
 #pragma warning restore 612, 618
         }
