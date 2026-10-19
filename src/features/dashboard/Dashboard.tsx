@@ -41,9 +41,9 @@ const featureCards = [
     iconClassName: 'bg-emerald-500/15 text-emerald-300',
   },
   {
-    title: 'Fitness',
-    description: 'Stay consistent.',
-    href: '/fitness',
+    title: 'Workout',
+    description: 'Log your sessions, sets and reps.',
+    href: '/workout',
     icon: Dumbbell,
     className:
       'from-orange-500/20 via-orange-500/10 to-transparent border-orange-400/20',
@@ -302,7 +302,7 @@ function Dashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Link
             to="/tasks"
             className="
@@ -342,6 +342,25 @@ function Dashboard() {
           </Link>
 
           <Link
+            to="/workout"
+            className="
+              flex items-center gap-3 rounded-2xl
+              border border-white/10
+              bg-white/[0.03]
+              px-4 py-3.5
+              text-sm font-medium text-white
+              transition
+              hover:bg-white/[0.07]
+            "
+          >
+            <div className="rounded-lg bg-orange-500/15 p-1.5 text-orange-300">
+              <Dumbbell className="h-4 w-4" />
+            </div>
+
+            Log workout
+          </Link>
+
+          <Link
             to="/goals"
             className="
               col-span-2 flex items-center gap-3 rounded-2xl
@@ -351,7 +370,7 @@ function Dashboard() {
               text-sm font-medium text-white
               transition
               hover:bg-white/[0.07]
-              sm:col-span-1
+              lg:col-span-1
             "
           >
             <div className="rounded-lg bg-sky-500/15 p-1.5 text-sky-300">

@@ -39,8 +39,8 @@ const primaryItems: NavigationItem[] = [
     icon: Goal,
   },
   {
-    to: '/fitness',
-    label: 'Fitness',
+    to: '/workout',
+    label: 'Workout',
     icon: Dumbbell,
   },
 ]
