@@ -6,6 +6,12 @@ using System.Text.Json.Serialization;
 using Trackline.Api.Services;
 using Trackline.Api.Services.Workout;
 
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Azure;
+using Azure.Core;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
@@ -88,12 +94,53 @@ builder.Services.AddScoped<
     ICurrentUserService,
     CurrentUserService
 >();
+
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    var vaultUri = builder.Configuration["KeyVault:VaultUri"]
+        ?? throw new InvalidOperationException(
+            "Key Vault URI is not configured.");
+
+    clientBuilder.AddSecretClient(new Uri(vaultUri));
+
+    TokenCredential credential = builder.Environment.IsDevelopment()
+        ? new DefaultAzureCredential()
+        : new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
+
+    clientBuilder.UseCredential(credential);
+});
+
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+
+if (!app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("KeyVault:VerifyOnStartup"))
 {
-    app.MapOpenApi();
+    try
+    {
+        var secretClient =
+            app.Services.GetRequiredService<SecretClient>();
+
+        var secret = await secretClient.GetSecretAsync(
+            "Trackline--TestSecret");
+
+        app.Logger.LogInformation(
+            "Azure Managed Identity verified. Secret: {SecretName}",
+            secret.Value.Name);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(
+            ex,
+            "Azure Key Vault Managed Identity verification failed.");
+    }
 }
+
+
+
+
 
 app.UseCors("TracklineFrontend");
 
