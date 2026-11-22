@@ -114,34 +114,6 @@ builder.Services.AddAzureClients(clientBuilder =>
 
 var app = builder.Build();
 
-
-if (!app.Environment.IsDevelopment() &&
-    app.Configuration.GetValue<bool>("KeyVault:VerifyOnStartup"))
-{
-    try
-    {
-        var secretClient =
-            app.Services.GetRequiredService<SecretClient>();
-
-        var secret = await secretClient.GetSecretAsync(
-            "Trackline--TestSecret");
-
-        app.Logger.LogInformation(
-            "Azure Managed Identity verified. Secret: {SecretName}",
-            secret.Value.Name);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(
-            ex,
-            "Azure Key Vault Managed Identity verification failed.");
-    }
-}
-
-
-
-
-
 app.UseCors("TracklineFrontend");
 
 app.UseAuthentication();
